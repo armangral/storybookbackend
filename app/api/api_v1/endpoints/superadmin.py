@@ -10,7 +10,7 @@ from app.api.deps import (
 )
 
 from app.core.wasabi import s3_download_file
-from app.crud.chat_pdf import get_all_pdf_collections_count, get_all_pdfs, get_pdf_for_user
+from app.crud.chat_pdf import get_all_pdf_collections_count, get_all_pdf_for_user, get_all_pdfs, get_pdf_collections_count, get_pdf_for_user
 from app.crud.user import (
     create_user_with_admin,
     get_all_users,
@@ -137,3 +137,30 @@ async def download_pdf_related_to_user(
             "Content-Disposition": f'attachment; filename="{chat_pdf.original_filename}"'
         },
     )
+
+
+# get all chat_pdfs for specific user
+@router.get("/pdfs/{user_id}")
+async def get_all_pdfs_for_user_by_user_id(
+    user_id: uuid.UUID,
+    user=Depends(get_current_active_super_admin),
+    db: AsyncSession = Depends(get_session),
+    skip: int = 0,
+    limit: int = 10,
+):
+    # Fetch the user by ID
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    # Fetch all PDF conversion records associated with the user
+    chat_pdfs = await get_all_pdf_for_user(db, user.id, skip, limit)
+    if not chat_pdfs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="PDFs not found"
+        )
+    count = await get_pdf_collections_count(db, user.id)
+
+    return {"data": chat_pdfs, "total_elements": count}

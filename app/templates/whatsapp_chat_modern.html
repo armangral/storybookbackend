@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat History</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #444;
+        }
+
+        .book {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .cover,
+        .back-cover {
+            text-align: center;
+            background: #000;
+            color: #fff;
+            padding: 40px;
+        }
+
+        .cover h1,
+        .back-cover p {
+            margin: 0;
+        }
+
+        .chat-page {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            display: flex;
+            margin: 15px 0;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+            color: #006B4F;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+            color: #333;
+        }
+
+        .message-content {
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .message.sent .message-content {
+            background-color: #DFF7DF;
+        }
+
+        .message.received .message-content {
+            background-color: #ECECEC;
+        }
+
+        .message-info {
+            font-size: 0.8em;
+            color: #777;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="book">
+        <div class="cover">
+            <h1>WhatsApp Chat History</h1>
+        </div>
+        <div class="chat-page">
+            {% for message in messages %}
+            <div class="message {% if message.sender == '.' %}received{% else %}sent{% endif %}">
+                <div class="message-content">
+                    {% if message.sender != '.' %}<strong>{{ message.sender }}:</strong> {% endif %}
+                    <p>{{ message.text }}</p>
+                    <div class="message-info">{{ message.date }} {{ message.time }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="back-cover">
+            <p>End of Chat History</p>
+        </div>
+    </div>
+</body>
+
+</html>

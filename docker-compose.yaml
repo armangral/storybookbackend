@@ -1,0 +1,47 @@
+# services:
+
+#   db:
+#     container_name: postgresql_db
+#     image: postgres
+#     restart: always
+#     ports:
+#       - 5003:5432
+#     environment:
+#       - POSTGRES_USER=${DATABASE_USERNAME}
+#       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+#       - POSTGRES_DB=${DATABASE_NAME}
+#     volumes:
+#     - /opt:/var/lib/postgresql/data
+#     env_file:
+#       - ./.env
+
+#   pgadmin:
+#     container_name: pgadmin
+#     image: dpage/pgadmin4
+#     environment:
+#       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+#       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+#     ports:
+#       - 5050:80
+#     depends_on:
+#       - db
+#     env_file:
+#       - ./.env
+
+#   app:
+#     container_name: app
+#     build: .
+#     command: bash -c "alembic upgrade head && uvicorn app.main:app --reload --host 0.0.0.0 --port 8001"
+#     ports:
+#       - 8001:8001
+#     depends_on:
+#       - db
+#     restart: on-failure
+#     env_file:
+#       - ./.env
+
+services:
+  gotenberg:
+    image: gotenberg/gotenberg:7
+    ports:
+      - "3000:3000"

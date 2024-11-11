@@ -104,7 +104,7 @@ async def get_all_pdfs_for_user(
     return {"data": chat_pdfs, "total_elements": count}
 
 
-@router.get("{user_id}/pdfs/{pdf_id}/download")
+@router.get("/{user_id}/pdfs/{pdf_id}/download")
 async def download_pdf_related_to_user(
     pdf_id: uuid.UUID,
     user_id: uuid.UUID,

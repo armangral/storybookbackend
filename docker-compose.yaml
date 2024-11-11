@@ -1,7 +1,7 @@
 services:
 
   db:
-    container_name: postgresql_db
+    container_name: postgresql_db_storybook
     image: postgres
     restart: always
     ports:
@@ -16,7 +16,7 @@ services:
       - ./.env
 
   pgadmin:
-    container_name: pgadmin
+    container_name: pgadmin_storybook
     image: dpage/pgadmin4
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
@@ -29,7 +29,7 @@ services:
       - ./.env
 
   app:
-    container_name: app
+    container_name: app_storybook
     build: .
     command: bash -c "alembic upgrade head && uvicorn app.main:app --reload --host 0.0.0.0 --port 8001"
     ports:

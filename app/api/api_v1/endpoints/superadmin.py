@@ -1,5 +1,6 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
@@ -8,7 +9,8 @@ from app.api.deps import (
     get_session,
 )
 
-from app.crud.chat_pdf import get_all_pdf_collections_count, get_all_pdfs
+from app.core.wasabi import s3_download_file
+from app.crud.chat_pdf import get_all_pdf_collections_count, get_all_pdfs, get_pdf_for_user
 from app.crud.user import (
     create_user_with_admin,
     get_all_users,
@@ -100,3 +102,38 @@ async def get_all_pdfs_for_user(
     count = await get_all_pdf_collections_count(db)
 
     return {"data": chat_pdfs, "total_elements": count}
+
+
+@router.get("{user_id}/pdfs/{pdf_id}/download")
+async def download_pdf_related_to_user(
+    pdf_id: uuid.UUID,
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_session),
+):
+    # Fetch the user by ID
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    # Fetch the PDF conversion record associated with the user
+    chat_pdf = await get_pdf_for_user(db, user.id, pdf_id)
+    if not chat_pdf:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="PDF not found"
+        )
+
+    print(chat_pdf.name_internal)
+
+    # Download the PDF file from storage (Wasabi/S3/etc.)
+    s3_response = await s3_download_file(chat_pdf, "chat_pdfs")
+
+    # Return the PDF file as a response
+    return Response(
+        content=s3_response,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{chat_pdf.original_filename}"'
+        },
+    )

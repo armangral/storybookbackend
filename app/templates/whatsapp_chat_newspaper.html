@@ -5,93 +5,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WhatsApp Chat History</title>
-    <style>
-        @page {
-            size: A4;
-            margin: 1cm;
-        }
+<style>
+    @page {
+        size: A4;
+        margin: 1cm;
+    }
 
-        body {
-            font-family: 'Georgia', serif;
-            color: #222;
-        }
+    body {
+        font-family: 'Times New Roman', serif;
+        color: #4b4b4b;
+        background-color: #ffffff;
+    }
 
-        .book {
-            max-width: 210mm;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f3f3f3;
-        }
+    .book {
+        max-width: 210mm;
+        margin: 0 auto;
+        padding: 20px;
+    }
 
-        .cover,
-        .back-cover {
-            text-align: center;
-            padding: 40px;
-            background: #333;
-            color: #f3f3f3;
-        }
+    .cover {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        background-color: #6c757d;
+        color: #f8f9fa;
+        min-height: 250mm;
+        text-align: center;
+        page-break-after: always;
+    }
 
-        .cover h1 {
-            font-size: 2.5em;
-            font-weight: bold;
-        }
+    .cover h1 {
+        font-size: 3em;
+        font-weight: bold;
+    }
 
-        .chat-page {
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-            padding: 15px;
-            margin: 20px 0;
-        }
+    .chat-page {
+        padding: 20px;
+        background-color: #f8f9fa;
+        page-break-after: always;
+    }
 
-        .message {
-            border-bottom: 1px solid #ccc;
+    .chat-container {
+        background-color: #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+    }
+
+    .message {
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        max-width: 70%;
+        font-size: 1em;
+        color: #343a40;
+    }
+
+    .message.sent {
+        background-color: #d1e7dd;
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .message.received {
+        background-color: #f8f9fa;
+        margin-right: auto;
+    }
+
+    .sender {
+        font-weight: bold;
+        color: #6c757d;
+    }
+
+    .message-info {
+        font-size: 0.8em;
+        color: #adb5bd;
+        margin-top: 6px;
+    }
+
+    .back-cover {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #6c757d;
+        color: #f8f9fa;
+        min-height: 250mm;
+        text-align: center;
+    }
+        .file-attachment {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
             padding: 10px;
+            margin-top: 10px;
+            text-align: center;
         }
 
-        .sent {
-            color: #064D25;
-            text-align: right;
+        .qr-code {
+            max-width: 100px;
+            max-height: 100px;
+            margin: 10px auto;
+            display: block;
         }
 
-        .received {
-            color: #333;
-            text-align: left;
-        }
-
-        .sender {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        .message-info {
-            font-size: 0.8em;
-            color: #777;
-            margin-top: 5px;
+        .image-show {
+            max-width: 300px;
+            max-height: 400px;
+            margin: 10px auto;
+            display: block;
         }
     </style>
-</head>
-
-<body>
-    <div class="book">
-        <div class="cover">
-            <h1>WhatsApp Chat History</h1>
-        </div>
-        <div class="chat-page">
-            {% for message in messages %}
-            <div class="message {% if message.sender == '.' %}received{% else %}sent{% endif %}">
-                {% if message.sender != '.' %}
-                <div class="sender">{{ message.sender }}</div>
-                {% endif %}
-                <p>{{ message.text }}</p>
-                <div class="message-info">{{ message.date }} {{ message.time }}</div>
+    </head>
+    
+    <body>
+        <div class="book">
+            <!-- Front Cover -->
+            <div class="cover">
+                <h1>WhatsApp Chat History</h1>
+                <p>Generated on: {{ generated_date }}</p>
+                <p>Total Messages: {{ total_messages }}</p>
+            </div>
+    
+            <!-- Chat Pages -->
+            {% for page_messages in messages|batch(10) %}
+            <div class="chat-page">
+                <div class="chat-container">
+                    {% for message in page_messages %}
+                    <div class="message {% if message.sender == '.' %}received{% else %}sent{% endif %}">
+                        {% if message.sender != '.' %}
+                        <div class="sender">{{ message.sender }}</div>
+                        {% endif %}
+    
+                        {% if 'file attached' in message.text %}
+                        <div class="file-attachment">
+                            {% set filename = message.text.split('(')[0].strip() %}
+                            <p>{{ filename }}</p>
+    
+                            <!-- Check if the message has an embedded image -->
+                            {% if message.embedded_image %}
+                            <img src="{{ message.embedded_image }}" class="image-show" alt="Embedded Image">
+                            {% elif message.qr_code %}
+                            <img src="data:image/png;base64,{{ message.qr_code }}" class="qr-code" alt="QR Code">
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <p>{{ message.text }}</p>
+                        {% endif %}
+    
+                        <div class="message-info">{{ message.date }} {{ message.time }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
             {% endfor %}
+    
+            <!-- Back Cover -->
+            <div class="back-cover">
+                <p>End of Chat History</p>
+            </div>
         </div>
-        <div class="back-cover">
-            <p>End of Chat History</p>
-        </div>
-    </div>
-</body>
-
-</html>
+    </body>
+    
+    
+    </html>

@@ -24,6 +24,7 @@ class UserCreateWithAdmin(UserCreate):
 class UserOut(UserBase):
     id: uuid.UUID
     is_super_admin: Optional[bool]
+    is_active: bool
 
     class Config:
         orm_mode = True

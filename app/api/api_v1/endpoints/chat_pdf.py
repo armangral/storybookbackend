@@ -295,12 +295,12 @@ async def convert_chat(
         )
 
         db.add(new_conversion)
-        db.commit()
-        db.refresh(new_conversion)
+        await db.commit()
+        await db.refresh(new_conversion)
 
         return {
             "status": "success",
-            "pdf_id": "new_conversion.id",
+            "pdf_id": new_conversion.id,
             "wasabi_key": pdf_key,
         }
 

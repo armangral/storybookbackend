@@ -10,85 +10,160 @@
             size: A4;
             margin: 1cm;
         }
-
+    
         body {
-            font-family: 'Segoe UI', sans-serif;
-            color: #ddd;
-            background: #121212;
+            font-family: 'Georgia', serif;
+            color: #e0e0e0;
+            background-color: #1a202c;
         }
-
+    
         .book {
             max-width: 210mm;
-            margin: auto;
+            margin: 0 auto;
             padding: 20px;
-            background: #1E1E1E;
-            border-radius: 10px;
         }
-
-        .cover,
-        .back-cover {
-            text-align: center;
-            background: #262626;
-            color: #fff;
-            padding: 30px;
-        }
-
-        .cover h1 {
-            font-size: 2em;
-        }
-
-        .chat-page {
+    
+        .cover {
             display: flex;
+            align-items: center;
+            justify-content: center;
             flex-direction: column;
+            background-color: #2d3748;
+            color: #f7fafc;
+            min-height: 250mm;
+            text-align: center;
+            page-break-after: always;
         }
-
+    
+        .cover h1 {
+            font-size: 3em;
+            font-weight: bold;
+        }
+    
+        .chat-page {
+            padding: 20px;
+            background-color: #2d3748;
+            page-break-after: always;
+        }
+    
+        .chat-container {
+            background-color: #4a5568;
+            border-radius: 15px;
+            padding: 20px;
+        }
+    
         .message {
+            border-radius: 10px;
             padding: 12px;
-            border-radius: 12px;
-            margin: 8px 0;
-            width: fit-content;
+            margin-bottom: 10px;
+            max-width: 70%;
+            color: #f7fafc;
         }
-
-        .sent {
-            background-color: #065535;
-            align-self: flex-end;
-            color: #fff;
+    
+        .message.sent {
+            background-color: #48bb78;
+            margin-left: auto;
+            text-align: right;
         }
-
-        .received {
-            background-color: #333;
-            align-self: flex-start;
-            color: #ccc;
+    
+        .message.received {
+            background-color: #2d3748;
+            margin-right: auto;
         }
-
+    
+        .sender {
+            font-weight: 700;
+            color: #cbd5e0;
+        }
+    
         .message-info {
             font-size: 0.8em;
-            color: #888;
-            text-align: right;
+            color: #a0aec0;
+            margin-top: 8px;
+        }
+    
+        .back-cover {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #2d3748;
+            color: #f7fafc;
+            min-height: 250mm;
+            text-align: center;
+        }
+        .file-attachment {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .qr-code {
+            max-width: 100px;
+            max-height: 100px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        .image-show {
+            max-width: 300px;
+            max-height: 400px;
+            margin: 10px auto;
+            display: block;
         }
     </style>
 </head>
 
 <body>
     <div class="book">
+        <!-- Front Cover -->
         <div class="cover">
             <h1>WhatsApp Chat History</h1>
+            <p>Generated on: {{ generated_date }}</p>
+            <p>Total Messages: {{ total_messages }}</p>
         </div>
+
+        <!-- Chat Pages -->
+        {% for page_messages in messages|batch(10) %}
         <div class="chat-page">
-            {% for message in messages %}
-            <div class="message {% if message.sender == '.' %}received{% else %}sent{% endif %}">
-                {% if message.sender != '.' %}
-                <strong>{{ message.sender }}</strong><br>
-                {% endif %}
-                <p>{{ message.text }}</p>
-                <div class="message-info">{{ message.date }} {{ message.time }}</div>
+            <div class="chat-container">
+                {% for message in page_messages %}
+                <div class="message {% if message.sender == '.' %}received{% else %}sent{% endif %}">
+                    {% if message.sender != '.' %}
+                    <div class="sender">{{ message.sender }}</div>
+                    {% endif %}
+
+                    {% if 'file attached' in message.text %}
+                    <div class="file-attachment">
+                        {% set filename = message.text.split('(')[0].strip() %}
+                        <p>{{ filename }}</p>
+
+                        <!-- Check if the message has an embedded image -->
+                        {% if message.embedded_image %}
+                        <img src="{{ message.embedded_image }}" class="image-show" alt="Embedded Image">
+                        {% elif message.qr_code %}
+                        <img src="data:image/png;base64,{{ message.qr_code }}" class="qr-code" alt="QR Code">
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p>{{ message.text }}</p>
+                    {% endif %}
+
+                    <div class="message-info">{{ message.date }} {{ message.time }}</div>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
+
+        <!-- Back Cover -->
         <div class="back-cover">
             <p>End of Chat History</p>
         </div>
     </div>
 </body>
+
 
 </html>

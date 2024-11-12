@@ -210,7 +210,9 @@ async def convert_chat(
                         filename = message["text"].split("(")[0].strip()
                     else:
                         # Handle French attachment line format
+                        print("message text is ",message["text"])
                         filename = message["text"].split(": ")[1].split(" >")[0].strip()
+                        print("filename is ",filename)
 
 
                 # if "file attached" in message.get("text", ""):

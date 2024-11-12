@@ -203,8 +203,18 @@ async def convert_chat(
         # Process messages and generate QR codes or embed images based on file type
         with ZipFile(io.BytesIO(await zip_file.read()), "r") as archive:
             for message in chat_data:
-                if "file attached" in message.get("text", ""):
-                    filename = message["text"].split("(")[0].strip()
+
+                if "file attached" in message.get("text", "") or "pièce jointe" in message.get("text", ""):
+                    # Extract filename based on the format of the attachment line
+                    if "file attached" in message.get("text", ""):
+                        filename = message["text"].split("(")[0].strip()
+                    else:
+                        # Handle French attachment line format
+                        filename = message["text"].split(": ")[1].split(" >")[0].strip()
+
+
+                # if "file attached" in message.get("text", ""):
+                #     filename = message["text"].split("(")[0].strip()
                     file_ext = filename.split(".")[-1].lower()  # Get the file extension
 
                     if filename in archive.namelist():

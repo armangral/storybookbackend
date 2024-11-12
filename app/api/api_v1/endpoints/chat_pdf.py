@@ -270,7 +270,7 @@ async def convert_chat(
         print("NOw also done")
 
         # Convert to PDF using Gotenberg in Docker
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=680.0) as client:
             response = await client.post(
                 "http://162.55.215.126:3000/forms/chromium/convert/html",
                 files={

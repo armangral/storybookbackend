@@ -69,8 +69,8 @@ async def openapi(username: str = Depends(get_current_username)):  # noqa: ARG00
 
 origins = [
     "http://localhost:5173",
-    "http://192.168.0.111:5173",
-    "http://192.168.0.102:5173",
+    "http://192.168.0.100:5173",
+    "http://192.168.0.103:5173",
     "http://192.168.0.108:5173",
     "https://192.168.118.133:5173",
     "https://192.168.72.133:5173",

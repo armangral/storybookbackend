@@ -163,12 +163,14 @@ router = APIRouter()
 
 
 def generate_qr_code(wasabi_url: str) -> str:
+    
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(wasabi_url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     buffered = io.BytesIO()
     img.save(buffered, format="PNG")
+    print("QR CODE DONE")
     return base64.b64encode(buffered.getvalue()).decode()
 
 class PDFStyleType(str, Enum):
@@ -207,7 +209,9 @@ async def convert_chat(
                 if "file attached" in message.get("text", "") or "pièce jointe" in message.get("text", ""):
                     # Extract filename based on the format of the attachment line
                     if "file attached" in message.get("text", ""):
+                        print("yes")
                         filename = message["text"].split("(")[0].strip()
+                        print(filename)
                     else:
                         # Handle French attachment line format
                         print("message text is ",message["text"])
@@ -218,8 +222,12 @@ async def convert_chat(
                 # if "file attached" in message.get("text", ""):
                 #     filename = message["text"].split("(")[0].strip()
                     file_ext = filename.split(".")[-1].lower()  # Get the file extension
+                    
+                    print(archive.namelist())
 
                     if filename in archive.namelist():
+                        print(archive.namelist())
+                        print(f"filename {filename} is in archive list")
                         with archive.open(filename) as file:
                             # Check if the file is an image based on its extension
 
@@ -383,4 +391,48 @@ async def download_pdf_related_to_user(
     )
 
 
+# import boto3
+# from fastapi import APIRouter, HTTPException
+# from fastapi.responses import StreamingResponse
+# import io
 
+# router = APIRouter()
+
+
+# @router.get("/download-pdf")
+# def download_zip_from_wasabi(
+#     key: str = "chat_files/chat_zip_dacea4c0-bd39-4cb3-9b12-53d25ae1a852",
+# ):
+#     """
+#     Download a file from Wasabi in ZIP format and stream it to the client.
+
+#     Args:
+#         key (str): The object key (file path) in the Wasabi bucket.
+
+#     Returns:
+#         StreamingResponse: The ZIP file as a streamed response.
+#     """
+#     # Initialize the S3 client for Wasabi
+#     s3_client = boto3.client(
+#         "s3",
+#         aws_access_key_id=settings.WASABI_ACCESS_KEY,
+#         aws_secret_access_key=settings.WASABI_SECRET_KEY,
+#         endpoint_url=settings.WASABI_API_BASE_URL,
+#     )
+
+#     # Create an in-memory bytes buffer
+#     zip_buffer = io.BytesIO()
+
+#     try:
+#         # Download the file directly into the buffer
+#         s3_client.download_fileobj(settings.WASABI_BUCKET_NAME, key, zip_buffer)
+#         zip_buffer.seek(0)  # Reset buffer position to the beginning
+#     except Exception as e:
+#         raise HTTPException(status_code=404, detail="File not found") from e
+
+#     # Create a streaming response to send the file to the client
+#     return StreamingResponse(
+#         zip_buffer,
+#         media_type="application/zip",
+#         headers={"Content-Disposition": "attachment; filename=whatsapp_chat.zip"},
+#     )

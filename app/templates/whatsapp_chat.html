@@ -143,11 +143,15 @@
                     <div class="sender">{{ message.sender }}</div>
                     {% endif %}
 
-                    {% if 'file attached' in message.text %}
+                    {% if 'file attached' in message.text or 'pièce jointe' in message.text %}
                     <div class="file-attachment">
+                        {% if 'file attached' in message.text %}
                         {% set filename = message.text.split('(')[0].strip() %}
+                        {% else %}
+                        {% set filename = message.text.split(': ')[1].split(' >')[0].strip() %}
+                        {% endif %}
                         <p>{{ filename }}</p>
-
+                    
                         <!-- Check if the message has an embedded image -->
                         {% if message.embedded_image %}
                         <img src="{{ message.embedded_image }}" class="image-show" alt="Embedded Image">
@@ -158,6 +162,7 @@
                     {% else %}
                     <p>{{ message.text }}</p>
                     {% endif %}
+
 
                     <div class="message-info">{{ message.date }} {{ message.time }}</div>
                 </div>
